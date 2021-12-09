@@ -2,7 +2,6 @@
 <html lang = "en">
 <head>
     <title>CSE312 Project</title>
-    <meta charset = "UTF-8" />
 </head>
 <body>
 <h1>CSE312 Project</h1>
@@ -21,12 +20,17 @@
         </tr>
     </table>
     <p>
-        <button onclick="">Login</button>
+        <input type="submit" value="Login" onclick="window.location='/login';"/>
+        <input type="submit" value="Register" onclick="window.location='/registration';"/>
     </p>
     <p>
-        <label>Chat: </label>
-        <input type = "text" id = "Typed Text" style="width: 500px;" placeholder="Start Typing Here"/>
+        <label for="Chat-Input">Start Typing Here: </label>
+        <input id="Chat-Input" type="text" style="width: 500px;" name="comment" placeholder="Start Typing Here">
+        <button onclick="sendMessage()">Chat</button>
     </p>
 </fieldset>
+
+<script src="server.js"></script>
+
 </body>
 </html>

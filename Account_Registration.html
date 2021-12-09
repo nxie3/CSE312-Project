@@ -1,0 +1,35 @@
+<html lang="en">
+<head>
+    <title>CSE312 Project Registration Page</title>
+</head>
+<h1> Register an account!</h1>
+
+<p> Return to the home page after finishing registering an account, there you can log in through the login button.</p>
+
+<p> Password Must Contain:<br>
+    1: A minimum length of 8<br>
+    2: At least 1 lowercase character<br>
+    3: At least 1 uppercase character<br>
+    4: At least 1 number<br>
+    5: At least 1 special character
+</p>
+
+<br/>
+
+<div id="registration_form">
+    <label for="usernameInput">Username: </label>
+    <input id="usernameInput" type="text"><br/>
+
+    <label for="passwordInput">Password: </label>
+    <input id="passwordInput" type="password"><br/>
+
+    <label for="form-file">Profile Picture: </label>
+    <input id="form-file" type="file" name="upload">
+
+    <br/><br/>
+
+    <button onclick="submit_form()">Register</button>
+</div>
+
+<script src="functions.js"></script>
+</html>
