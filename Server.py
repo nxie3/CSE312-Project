@@ -52,6 +52,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                 Database.add_users(username, password)
                 self.request.sendall("HTTP/1.1 302 Moved Permanently\r\nContent-Length: 0\r\nLocation: \\ \r\n\r\n".encode())
 
+
 if __name__ == "__main__":
     host = "0.0.0.0"
     port = 8000
