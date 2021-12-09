@@ -33,8 +33,8 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                 content = content.read()
                 length = str(len(content.encode("utf-8")))
                 self.request.sendall(("HTTP/1.1 200 OK\r\nContent-Length: " + length + "\r\nContent-Type: text/html; charset=utf-8; X-Content-Type-Options=nosniff\r\n\r\n" + content).encode())
-            elif temp[1] == "/server.js":
-                content = open("server.js", mode="r", encoding="utf-8")
+            elif temp[1] == "/functions.js":
+                content = open("functions.js", mode="r", encoding="utf-8")
                 content = content.read()
                 length = str(len(content.encode("utf-8")))
                 self.request.sendall(("HTTP/1.1 200 OK\r\nContent-Length: " + length + "\r\nContent-Type: text/javascript; charset=utf-8; X-Content-Type-Options=nosniff\r\n\r\n" + content).encode())
