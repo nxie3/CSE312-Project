@@ -14,22 +14,19 @@
     5: At least 1 special character
 </p>
 
-<br/>
+<p>Be sure to include a Profile Picture and Username!</p>
 
-<div id="registration_form">
+
+<form action="/registered" id="registration" method="post" enctype="multipart/form-data">
     <label for="usernameInput">Username: </label>
-    <input id="usernameInput" type="text"><br/>
+    <input id="usernameInput" type="text" name="username"><br/>
 
     <label for="passwordInput">Password: </label>
-    <input id="passwordInput" type="password"><br/>
+    <input id="passwordInput" type="password" name="password"><br/>
 
-    <label for="form-file">Profile Picture: </label>
-    <input id="form-file" type="file" name="upload">
+    <label for="profileInput">Profile Picture: </label>
+    <input id="profileInput" type="file" name="upload"><br/><br/>
 
-    <br/><br/>
-
-    <button onclick="submit_form()">Register</button>
-</div>
-
-<script src="functions.js"></script>
+    <input type="submit" value="Submit">
+</form>
 </html>

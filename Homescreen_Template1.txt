@@ -19,14 +19,4 @@
             </td>
         </tr>
     </table>
-    <p>        <input type="submit" value="Login" onclick="window.location='/login';"/>
-        <input type="submit" value="Register" onclick="window.location='/registration';"/>    </p>
     <p>
-        <label for="Chat-Input">Start Typing Here: </label>
-        <input id="Chat-Input" type="text" style="width: 500px;" name="comment" placeholder="Start Typing Here">
-        <button onclick="sendMessage()">Chat</button>
-    </p>
-</fieldset>
-
-</body>
-</html>
