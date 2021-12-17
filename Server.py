@@ -3,17 +3,39 @@ import sys
 import time
 import secrets
 import Database
+import json
+import hashlib
+import base64
+from socketserver import ThreadingTCPServer
+
+socketserver.TCPServer.allow_reuse_address = True
 
 
 class MyTCPHandler(socketserver.BaseRequestHandler):
     clients = []
+    pLI = {}
+    client_sockets = []
     websocket = False
     cookie = [""]
 
     def handle(self):
         recieved_data = self.request.recv(1024)
+        client_id = self.client_address[0] + ":" + str(self.client_address[1])
+        self.clients.append(client_id)
         data = recieved_data.decode().split("\r\n")
         temp = data[0].split()
+        database2 = {}
+        for e in data:
+            splite = e.split(": ", 1)
+            if len(splite) > 1:
+                v = splite[1]
+                i = splite[0]
+                database2[i] = v
+            else:
+                database2[e] = "single"
+        print(database2)
+
+
         length = ""
         for x in data:
             if x.find("Content-Length") != -1:
@@ -26,20 +48,16 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                 recieved_data += body
                 repeat -= 1
 
-        client_id = self.client_address[0] + ":" + str(self.client_address[1])
-        print(client_id + " is sending data:")
-        print(recieved_data)
 
-        self.clients.append(client_id)
-        print(self.clients)
 
         print("\n\n")
-        sys.stdout.flush()
-        sys.stderr.flush()
+        #sys.stdout.flush()
+        #sys.stderr.flush()
 
-        time.sleep(0)
+        #time.sleep(0)
 
         if temp[0] == "GET":
+            print("New GET")
             if temp[1] == "/":
                 cookie_id = secrets.token_urlsafe(16)
                 cookie_data = find_cookie(data)
@@ -60,6 +78,12 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                 content = content.read()
                 length = str(len(content.encode("utf-8")))
                 self.request.sendall(("HTTP/1.1 200 OK\r\nContent-Length: " + length + "\r\nContent-Type: text/javascript; charset=utf-8; X-Content-Type-Options=nosniff\r\n\r\n" + content).encode())
+            elif temp[1] == "/websocket":
+                # check that the user is logged in either by directly querying login db
+                # or check the auth token cookie.
+                # then and only then will you handle the websocket connection.
+                print("Handling /websocket")
+                self.handle_websocket(database2)
             elif temp[1] == "/registration":
                 content = open("Account_Registration.html", mode="r", encoding="utf-8")
                 content = content.read()
@@ -121,6 +145,88 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                     html.write(content)
                     html.close()
                 self.request.sendall("HTTP/1.1 302 Moved Permanently\r\nContent-Length: 0\r\nLocation: reg_status \r\n\r\n".encode())
+            elif temp[1] == "/chat":
+                print("passed")
+                chat_info = json.loads(data[len(data) - 1])
+                chat = chat_info["chat"]
+                print("chat has been retrieved!")
+                print(chat)
+                mydb.messages.insert_one(chat)
+                print("inserted into db")
+
+
+
+    def handle_websocket(self, database2):
+        if "Sec-WebSocket-Key" in database2:
+            print("passed2")
+            if database2.get("Sec-WebSocket-Key") != "None":
+                wKey = database2.get("Sec-WebSocket-Key")
+                print("passed3")
+                print(wKey)
+                wKey += "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+                print("passed4")
+                print(wKey)
+                wKeys = wKey.encode("utf-8")
+                hashKey = hashlib.sha1(wKeys)
+                hexKey = hashKey.digest()
+                #hexKeys = hexKey.encode("utf-8")
+                b64Key = base64.standard_b64encode(hexKey)
+                print(f"b64Key={b64Key}")
+                headers3 = "HTTP/1.1 101 Switching Protocols\r\n" + \
+                           '''Connection: Upgrade\r\n'''+ \
+                           '''Upgrade: websocket\r\n''' + \
+                           '''Sec-WebSocket-Accept: %s'''
+                headers4 = headers3.encode("utf-8")
+                ending = ('''\r\n\r\n''').encode("utf-8")
+                headers4 = headers4%(b64Key)+ending
+                # print("didnt Forget")
+                # print(headers4.decode())
+                # print(b64Key)
+                # End of websocket handshake
+                print("before sending handshake")
+                print(f"sending headers4={headers4}")
+                self.request.sendall(headers4)
+
+                """
+                print('Creating mongo client')
+                myclient = pymongo.MongoClient("mongodb://mongo:27017/")
+                mydb = myclient["chatDB"]
+                print('Created mongo client')
+                for msg in mydb.messages.find():
+                    print(f'Message: {msg}')
+                    # Send msg to the client over websocket
+                    del msg['_id']
+                    jsonMsg = json.dumps(msg) # msg is a python dict
+                    frame = bytearray([129, len(jsonMsg)]) + jsonMsg.encode()
+                    print(f'Frame: {frame}')
+                    self.request.sendall(frame)
+                """
+
+                MyTCPHandler.client_sockets.append(self.request)
+
+                # Start processing incoming messages
+                while True:
+                    data = self.request.recv(1024).strip()
+                    for byte in data:
+                        print(bin(byte))
+                    mask = data[2:6]
+                    payloadData = data[6:]
+                    print("passed5")
+                    wow = []
+
+                    for x in range(len(payloadData)):
+                        data2 = payloadData[x] ^ mask[x%4]
+                        wow.append(data2)
+                    maskedPayLoad = bytearray(wow)
+
+                    dictPayLoad = json.loads(maskedPayLoad.decode())
+                    print(f"dictPayLoad={dictPayLoad}")
+                    # mydb.messages.insert_one(dictPayLoad)
+
+                    for client in MyTCPHandler.client_sockets:
+                        jsonMsg = json.dumps(dictPayLoad)
+                        frame = bytearray([129, len(jsonMsg)]) + jsonMsg.encode()
+                        client.sendall(frame)
 
 
 def check_digit(password):
@@ -183,5 +289,6 @@ if __name__ == "__main__":
     host = "0.0.0.0"
     port = 8000
 
-    server = socketserver.TCPServer((host, port), MyTCPHandler)
+    #server = socketserver.TCPServer((host, port), MyTCPHandler)
+    server = ThreadingTCPServer((host, port), MyTCPHandler)
     server.serve_forever()

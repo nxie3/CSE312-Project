@@ -47,4 +47,32 @@ def auth_users(username, password):
     else:
         return False
 
+def add_chat(chat):
+    data = self.request.recv(1024).strip()
+    for byte in data:
+        print(bin(byte))
+    mask = data[2:6]
+    payloadData = data[6:]
+    print("passed5")
+    wow = []
+
+    for x in range(len(payloadData)):
+        data2 = payloadData[x] ^ mask[x % 4]
+        wow.append(data2)
+    maskedPayLoad = bytearray(wow)
+
+    dictPayLoad = json.loads(maskedPayLoad.decode())
+    mydb.messages.insert_one(dictPayLoad)
+
+
+def display_chat():
+    for msg in mydb.messages.find():
+        print(f'Message: {msg}')
+        # Send msg to the client over websocket
+        del msg['_id']
+        jsonMsg = json.dumps(msg)  # msg is a python dict
+        frame = bytearray([129, len(jsonMsg)]) + jsonMsg.encode()
+        print(f'Frame: {frame}')
+        self.request.sendall(frame)
+
 

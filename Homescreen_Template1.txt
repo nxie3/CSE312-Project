@@ -10,8 +10,8 @@
         <tr>
             <td>
                 <label for="Chat">Chat:</label>
-                <textarea id="Chat" rows="15" cols="84" readonly>
-                    </textarea>
+                <div id="Chat" rows="15" cols="84" readonly>
+                    </div>
             </td>
             <td>
                 <label for="Users">Currently Logged In:</label>
